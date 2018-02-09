@@ -34,28 +34,29 @@ int main(void)
 
 		char input[MAX_LINE];
 
-		scanf("%[^\n]%*c", input);//record user input
+		//scanf("%[^\n]%*c", input);//record user input
 		//read(STDIN_FILENO, input, MAX_LINE);
-		printf("Checking std.read: %s\n", input);
-		if (0==strcmp(exit, input))
-		{
+		if(fgets(input, MAX_LINE, stdin)!= NULL){
+		    printf("Checking std.read: %s\n", input);
+		    if (0==strcmp(exit, input))
+		      {
 			printf("User input=exit\n");
 			should_run=0;
 			printf("exiting\n");
 			break;
-		}
-		else
-		{
+		      }
+		    else
+		      {
 			printf("User did not input exit\n");
 			int status = extractArgs(input, args);
 			
 			pid = fork();
 			if (pid==0)
-				ChildProcess(args);
+			  ChildProcess(args);
 			else
-				ParentProcess();
+			  ParentProcess();
+		      }
 		}
-
 		fflush(stdout); 
 	}
 
@@ -77,17 +78,17 @@ void ParentProcess(void)
 int extractArgs(char input[], char *args[])
 {
 	char * token;
-	//token = strsep(input," ");
+	token = strtok(input," ");
 	printf("Extracting arguments\n");
 	int i = 0;
 
-	while ((token=strsep(&input, " "))!=NULL)
+	/*	while ((token=strsep(&input, " "))!=NULL)
 	{
 		malloc(sizeof(MAX_LINE/2 + 1));
 		printf("Argument %i\n",i);
 		args[i++]=token;
-	}
-/*
+		}*/
+
 	while (token != NULL)
 	{
 		malloc(sizeof(MAX_LINE/2 + 1));
@@ -96,7 +97,7 @@ int extractArgs(char input[], char *args[])
 		i++;
 		token = strtok(NULL," ");
 	}
-*/
+
 	int j =0;
 	while (j < i)
 	{
