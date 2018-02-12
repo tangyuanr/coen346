@@ -6,11 +6,24 @@
 #include <string.h>
 
 #define MAX_LINE     80
-#define MAX_COMMANDS 5
+#define MAX_COMMANDS 10
+
+struct pastCommand
+{
+	char command[MAX_LINE+1];
+	int index;
+};
+
 
 void ChildProcess(char *[]);//child process that performs execvp()
 void ParentProcess(void);//parent process that reads inputs for execvp()
 int extractArgs(char[], char *[]);
+
+//PART 2
+int history_counter;//counter to keep track # of commands
+void historyCommand();
+struct pastCommand history[MAX_COMMANDS];//list of last used commands
+void rearrangeList(struct pastCommand*);
 
 int main(void)
 {
@@ -28,6 +41,7 @@ int main(void)
 	pid_t pid;
 
 	char exit[5] = "exit";
+	char history[8] = "history";
 	printf("should_run is %i\n", should_run);
 
 	while(should_run)
@@ -45,13 +59,27 @@ int main(void)
 				printf("User input=exit\n");
 				should_run = 0;
 				printf("exiting\n");
-			} else {
-				printf("User did not input exit\n");
+			}
+			else if (strcmp(history, input) == 0)
+			{
+				printf("User input = history\n");
+				historyCommand();
+			}
+			else {
+				printf("User did not input exit nor history\n");
 				int status = extractArgs(input, args);
 				if (status < 0){
 					printf("An error occurred!\n");
 					return -1;
 				}
+
+				struct pastCommand* new_command;
+				new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
+				strcpy(new_command->command, input);
+				//new_command->command = input;
+				new_command->index = history_counter++;
+			
+				rearrangeList(new_command);//append command to linkedlist
 				
 				pid = fork();
 				if (pid == 0){
@@ -135,3 +163,41 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 	}
 }
 
+
+
+void historyCommand()
+{
+	printf("****ENTERING historyCommand()\n");
+	int index;
+	if (history_counter<MAX_COMMANDS)
+		index=history_counter;
+	else
+		index=MAX_COMMANDS;
+
+	int i;
+	for(i=0;i<index;i++)
+	{
+		printf("%i    %s\n", history[i].index, history[i].command);
+	}
+}
+
+
+void rearrangeList(struct pastCommand* new_command)
+{
+	printf("*****REARRANGING\n");
+	int index;
+	if (history_counter<MAX_COMMANDS)
+		index=history_counter;
+	else
+		index=MAX_COMMANDS;
+	printf("Index chosen: %i\n", index);
+	//shuffle previously recorded commands
+	int i;
+	for(i=0;i<index-1;i++)
+	{
+		history[i] = history[i+1];
+	}
+	//append new commands at the end of list
+	history[index-1] = *new_command;
+	printf("******EXITING LIST REARRANGEMENT********\n");
+}
