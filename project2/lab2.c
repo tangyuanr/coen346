@@ -187,17 +187,32 @@ void rearrangeList(struct pastCommand* new_command)
 	printf("*****REARRANGING\n");
 	int index;
 	if (history_counter<MAX_COMMANDS)
-		index=history_counter;
-	else
-		index=MAX_COMMANDS;
-	printf("Index chosen: %i\n", index);
-	//shuffle previously recorded commands
-	int i;
-	for(i=0;i<index-1;i++)
 	{
-		history[i] = history[i+1];
+		index=history_counter;
+		printf("Index chosen < max commands, list is not full: %i\n", index);
+		
+		if (new_command->index==0 && strcmp(new_command->command, "")==0)
+		{}
+		else
+			history[index-1] = *new_command;
 	}
-	//append new commands at the end of list
-	history[index-1] = *new_command;
+	else
+	{
+		index=MAX_COMMANDS;
+		printf("Index chosen = max commands, list is full, SHUFFLING: %i\n", index);
+		//shuffle previously recorded commands
+		int i;
+		for(i=0;i<index-1;i++)
+		{
+			history[i] = history[i+1];
+		}
+		//append new commands at the end of list
+		if (new_command->index==0 && strcmp(new_command->command, "")==0)
+		{}
+		else
+			history[index-1] = *new_command;
+	}
+	
+
 	printf("******EXITING LIST REARRANGEMENT********\n");
 }
