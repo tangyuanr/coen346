@@ -162,6 +162,46 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 			}
 			printf("Calling most recent command: %s\n", input);
 		}
+		else//input is !n
+		{
+			char* substring = strtok(token, "!");
+			printf("User input is !n, where n=%s\n", substring);
+			
+			//converting string to int
+			char* base;
+			int command_id;
+			command_id = (int)strtol(substring, &base, 10);
+			printf("Command to be executed has index=%i\n", command_id);
+
+			//looking for corresponding command
+			int range;
+			if (history_counter<MAX_COMMANDS) // list not full, cannot check fron the last item
+				range = history_counter;
+			else
+				range = MAX_COMMANDS;
+			printf("Checking command range is %i\n", range);			
+			
+			int j=0;
+			for (j;j<range;j++)
+			{
+				printf("Checking command with id %i\n", history[j].index);
+				if (history[j].index==command_id)
+				{
+					input = history[j].command;
+					printf("Found command with id %i, command is: %s\n", history[j].index, history[j].command);
+					break;
+				}
+				else
+				{
+					if (j==range-1)//at the end of the loop
+					{
+						printf("Command with id %i has not been found\n", command_id);
+						return 2;
+					}
+				}
+			}
+			
+		}
 	}
 
 	while ((token=strsep(&input, " "))!=NULL && i < (MAX_LINE/2+1))
