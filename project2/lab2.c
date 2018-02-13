@@ -67,6 +67,7 @@ int main(void)
 			}
 			else {
 				printf("User did not input exit nor history\n");
+
 				int status = extractArgs(input, args);
 				if (status < 0){
 					printf("An error occurred!\n");
@@ -77,12 +78,18 @@ int main(void)
 				new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
 				strcpy(new_command->command, input);
 				//new_command->command = input;
-				new_command->index = history_counter++;
+				new_command->index = history_counter;
+				if (new_command->command[0]=='!')
+				{
+					printf("history operator called, counter not increasing\n");
+				}
+				else
+					history_counter+=1;
 			
 				rearrangeList(new_command);//append command to linkedlist
 				
 				pid = fork();
-				if (pid == 0){
+				if (pid == 0 && status != 2){
 					ChildProcess(args);
 					break;
 				}	else if (pid > 0){
@@ -122,6 +129,28 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 
 	printf("Extracting arguments\n");
 	int i = 0;
+
+	printf("Checking if user called history shortcut\n");
+	if ('!'==input[0])
+	{
+		printf("User input contains history operator: !\n");
+		printf("First word of the input: %s\n", (token=strsep(&input, " ")));
+
+		//checking whether user input is !! or !n
+		char last[2] = "!!";
+		if (strcmp(token, last)==0)
+		{
+			printf("User input is !!\n");
+			printf("%i\n", history_counter);
+			//assigning the last command to input
+			if (history_counter==0)
+			{
+				printf("No command has been stored\n");
+				//history_counter--;
+				return 2;
+			}
+		}
+	}
 
 	while ((token=strsep(&input, " "))!=NULL && i < (MAX_LINE/2+1))
 	{
@@ -191,8 +220,10 @@ void rearrangeList(struct pastCommand* new_command)
 		index=history_counter;
 		printf("Index chosen < max commands, list is not full: %i\n", index);
 		
-		if (new_command->index==0 && strcmp(new_command->command, "")==0)
-		{}
+		if (new_command->index==0 && strcmp(new_command->command, "")==0 || new_command->command[0]=='!')
+		{
+			//history_counter-=1;
+		}
 		else
 			history[index-1] = *new_command;
 	}
@@ -207,8 +238,10 @@ void rearrangeList(struct pastCommand* new_command)
 			history[i] = history[i+1];
 		}
 		//append new commands at the end of list
-		if (new_command->index==0 && strcmp(new_command->command, "")==0)
-		{}
+		if (new_command->index==0 && strcmp(new_command->command, "")==0 || new_command->command[0]=='!')
+		{
+			//history_counter-=1;
+		}
 		else
 			history[index-1] = *new_command;
 	}
