@@ -142,13 +142,25 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 		{
 			printf("User input is !!\n");
 			printf("%i\n", history_counter);
-			//assigning the last command to input
+
+			//will not execute anything if history is empty
 			if (history_counter==0)
 			{
 				printf("No command has been stored\n");
 				//history_counter--;
 				return 2;
 			}
+
+			//find last command and replace the input with it			
+			if(history_counter<MAX_COMMANDS)
+			{
+				input = history[history_counter-1].command;
+			}
+			else
+			{
+				input = history[MAX_COMMANDS-1].command;
+			}
+			printf("Calling most recent command: %s\n", input);
 		}
 	}
 
