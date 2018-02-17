@@ -68,40 +68,39 @@ int main(void)
 			else {
 				printf("User did not input exit nor history\n");
 
+
+			//if (new_command->command[0]=='!')
+			//{
+			//	printf("history operator called\n");
+			//	history_counter+=1;
+			//}
+			//else
+				history_counter+=1;
 				int status = extractArgs(input, args);
 				if (status < 0){
 					printf("An error occurred!\n");
 					return -1;
 				}
 
-				struct pastCommand* new_command;
-				new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
-				strcpy(new_command->command, input);
-				//new_command->command = input;
-				new_command->index = history_counter;
-				if (new_command->command[0]=='!')
-				{
-					printf("history operator called, counter not increasing\n");
-				}
-				else
-					history_counter+=1;
-			
-				rearrangeList(new_command);//append command to linkedlist
+
 				
 				pid = fork();
 				if (pid == 0 && status != 2){
 					ChildProcess(args);
 					break;
-				}	else if (pid > 0){
+				}	
+				else if (pid > 0){
 					if (status != 1)
 						wait();
 					ParentProcess();
-				}	else	{
+				}	
+				else	{
 					printf("Unable to create child proces!\n");
 					return -1;
 				}
 			}
-		} else{
+		} 
+		else{
 			printf("Input error!");
 			return -1;
 		}
@@ -137,7 +136,7 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 		printf("First word of the input: %s\n", (token=strsep(&input, " ")));
 
 		//checking whether user input is !! or !n
-		char last[2] = "!!";
+		char last[3] = "!!";
 		if (strcmp(token, last)==0)
 		{
 			printf("User input is !!\n");
@@ -154,15 +153,64 @@ int extractArgs(char input[MAX_LINE+1], char* args[MAX_LINE/2 + 1])
 			//find last command and replace the input with it			
 			if(history_counter<MAX_COMMANDS)
 			{
-				input = history[history_counter-1].command;
+				input = history[history_counter-2].command;
 			}
 			else
 			{
-				input = history[MAX_COMMANDS-1].command;
+				input = history[MAX_COMMANDS-2].command;
 			}
 			printf("Calling most recent command: %s\n", input);
 		}
+		else//input is !n
+		{
+			char* substring = strtok(token, "!");
+			printf("User input is !n, where n=%s\n", substring);
+			
+			//converting string to int
+			char* base;
+			int command_id;
+			command_id = (int)strtol(substring, &base, 10);
+			printf("Command to be executed has index=%i\n", command_id);
+
+			//looking for corresponding command
+			int range;
+			if (history_counter<MAX_COMMANDS) // list not full, cannot check fron the last item
+				range = history_counter;
+			else
+				range = MAX_COMMANDS;
+			printf("Checking command range is %i\n", range);			
+			
+			int j=0;
+			for (j;j<range;j++)
+			{
+				printf("Checking command with id %i\n", history[j].index);
+				if (history[j].index==command_id)
+				{
+					input = history[j].command;
+					printf("Found command with id %i, command is: %s\n", history[j].index, history[j].command);
+					break;
+				}
+				else
+				{
+					if (j==range-1)//at the end of the loop
+					{
+						printf("Command with id %i has not been found\n", command_id);
+						return 2;
+					}
+				}
+			}
+			
+		}
 	}
+
+		struct pastCommand* new_command;
+		new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
+		strcpy(new_command->command, input);
+		new_command->index = history_counter;
+
+
+	
+		rearrangeList(new_command);//append command to linkedlist
 
 	while ((token=strsep(&input, " "))!=NULL && i < (MAX_LINE/2+1))
 	{
