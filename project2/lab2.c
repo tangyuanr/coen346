@@ -68,23 +68,24 @@ int main(void)
 			else {
 				printf("User did not input exit nor history\n");
 
+			struct pastCommand* new_command;
+			new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
+			strcpy(new_command->command, input);
+			//new_command->command = input;
+			new_command->index = history_counter;
+			if (new_command->command[0]=='!')
+			{
+				printf("history operator called, counter not increasing\n");
+			}
+			else
+				history_counter+=1;
 				int status = extractArgs(input, args);
 				if (status < 0){
 					printf("An error occurred!\n");
 					return -1;
 				}
 
-				struct pastCommand* new_command;
-				new_command = (struct pastCommand*)malloc(sizeof(struct pastCommand));
-				strcpy(new_command->command, input);
-				//new_command->command = input;
-				new_command->index = history_counter;
-				if (new_command->command[0]=='!')
-				{
-					printf("history operator called, counter not increasing\n");
-				}
-				else
-					history_counter+=1;
+
 			
 				rearrangeList(new_command);//append command to linkedlist
 				
@@ -92,11 +93,13 @@ int main(void)
 				if (pid == 0 && status != 2){
 					ChildProcess(args);
 					break;
-				}	else if (pid > 0){
+				}	
+				else if (pid > 0){
 					if (status != 1)
 						wait();
 					ParentProcess();
-				}	else	{
+				}	
+				else	{
 					printf("Unable to create child proces!\n");
 					return -1;
 				}
